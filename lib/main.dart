@@ -151,14 +151,27 @@ class _LoginPageState extends State<LoginPage> {
                                     child: Container(
                                       padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[300],
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: Text(
-                                        countryCode?.dialCode ?? '+1',
-                                        style: TextStyle(
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold,
+                                      child: Container(
+                                        height: 30,
+
+                                        decoration: BoxDecoration(
+                                          border: Border(right: BorderSide(color: Colors.black, )),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.arrow_drop_down),
+                                            SizedBox(width: 20,),
+                                            Text(
+                                              countryCode?.dialCode ?? '+91'+' ',
+                                              style: TextStyle(
+                                                fontSize: 25,
+
+
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
