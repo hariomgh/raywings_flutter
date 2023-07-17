@@ -48,6 +48,8 @@ class _OtpScreenState extends State<OtpScreen> {
 
                     SizedBox(width: 10,),
 
+
+
                     TextButton(
                       style: TextButton.styleFrom(
                         textStyle: TextStyle(
@@ -60,20 +62,15 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                       onPressed: () {},
                       
-                      child: const Row(
-                        children: [
-                          Icon(Icons.edit),
-                          Text('Edit Number',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-
-                          ),
-                        ],
+                      child: Text('Edit Number',
+                      style: TextStyle(
+                        fontSize: 15,
+                      ),
                       ),
                     ),
                   ]
                 ),
+
                 SizedBox(height: 20,),
 
                 OtpTextField(
