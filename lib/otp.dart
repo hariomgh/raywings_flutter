@@ -60,10 +60,10 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                       onPressed: () {},
                       
-                      child: Row(
+                      child: const Row(
                         children: [
-                          Icon(Icons.edit)
-                          const Text('Edit Number',
+                          Icon(Icons.edit),
+                          Text('Edit Number',
                           style: TextStyle(
                             fontSize: 15,
                           ),
