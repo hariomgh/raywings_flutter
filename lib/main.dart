@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fl_country_code_picker/fl_country_code_picker.dart';
+import 'otp.dart';
 
 void main() {
   runApp(MyApp());
@@ -218,7 +219,10 @@ class _LoginPageState extends State<LoginPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: ElevatedButton(
-                                onPressed: _sendOTP,
+                                // onPressed: _sendOTP,
+                                onPressed: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => OtpScreen()));
+                                },
                                 style: ElevatedButton.styleFrom(
                                   primary: Colors.transparent,
                                   elevation: 0,

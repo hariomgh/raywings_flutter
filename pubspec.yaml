@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   country_picker: ^2.0.20
   fl_country_code_picker: ^0.1.5
+  pin_code_fields: ^8.0.1
 
 dev_dependencies:
   flutter_test:
