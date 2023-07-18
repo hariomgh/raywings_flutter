@@ -75,9 +75,12 @@ class _OtpScreenState extends State<OtpScreen> {
                   ],
                 ),
                 SizedBox(height: 20),
+
+
                 OtpTextField(
-                  numberOfFields: 5,
-                  borderColor: borderColor,
+                  numberOfFields: 4,
+                  borderColor: Color(0xff800000),
+                  focusedBorderColor: Color(0xff800000), // Set the focused border color to red
                   showFieldAsBox: true,
                   onCodeChanged: (String code) {
                     // Handle validation or checks here
@@ -94,6 +97,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     );
                   },
                 ),
+
                 SizedBox(height: 20),
                 Visibility(
                   visible: !isTimerRunning, // Show when the timer is not running
