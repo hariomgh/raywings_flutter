@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
+import 'package:raywings_flutter/login_page.dart';
+import 'package:raywings_flutter/registration.dart';
+import 'package:http/http.dart' as http;
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({Key? key}) : super(key: key);
+
+  final String phoneNumber;
+  final String countryCode;
+
+  const OtpScreen({Key? key, required this.phoneNumber, required this.countryCode}) : super(key: key);
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -12,14 +19,15 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   Color borderColor = Color(0xFF800000);
-  bool isTimerRunning = false; // Variable to track the timer state
-  int countdownSeconds = 30; // Countdown time in seconds
+  bool isTimerRunning = false;
+  int countdownSeconds = 30;
   Timer? timer;
 
   @override
   void initState() {
     super.initState();
-    startTimer(); // Start the timer when the screen is first loaded
+    startTimer();
+    _sendOTP();
   }
 
   @override
@@ -29,8 +37,93 @@ class _OtpScreenState extends State<OtpScreen> {
     super.dispose();
   }
 
+  void startTimer() {
+    setState(() {
+      isTimerRunning = true;
+    });
+
+    timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      setState(() {
+        countdownSeconds--;
+        if (countdownSeconds <= 0) {
+          timer.cancel();
+          isTimerRunning = false;
+          countdownSeconds = 30;
+        }
+      });
+    });
+  }
+
+  void _sendOTP() async {
+    // Construct the API URL
+    String apiUrl = 'https://raywingslearningapp.institute.org.in/api/public/send-otp';
+
+    // Construct the request body
+    Map<String, dynamic> requestBody = {
+      // 'countryCode': widget.countryCode,
+      // 'phoneNumber': widget.phoneNumber,
+      'username': widget.phoneNumber,
+    };
+
+    try {
+      // Make the POST request
+      http.Response response = await http.post(
+          Uri.parse(apiUrl), body: requestBody);
+
+      // Check the response status code
+      if (response.statusCode == 200) {
+        // Success: OTP sent
+        print('OTP sent to ${widget.phoneNumber}');
+      } else {
+        // Error: OTP not sent
+        print('Failed to send OTP. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Exception occurred during the request
+      print('Error sending OTP: $e');
+    }
+  }
+
+
+  void _verifyOTP(String otp) async {
+    // Construct the API URL
+    String apiUrl = 'https://raywingslearningapp.institute.org.in/api/public/user/verify-otp';
+
+    // Construct the request body
+    Map<String, dynamic> requestBody = {
+      'user': widget.phoneNumber,
+      'otpData': otp,
+    };
+
+    try {
+      // Make the POST request
+      http.Response response = await http.post(Uri.parse(apiUrl), body: requestBody);
+
+      // Check the response status code
+      if (response.statusCode == 200) {
+        // Success: OTP verified
+        print('OTP verified for ${widget.phoneNumber}');
+        // Navigate to the next screen (e.g., registration screen)
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => StudentForm()),
+        );
+      } else {
+        // Error: OTP not verified
+        print('OTP verification failed. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Exception occurred during the request
+      print('Error verifying OTP: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Extract the last 4 digits of the phoneNumber
+    String lastFourDigits = widget.phoneNumber.substring(widget.phoneNumber.length - 4);
+
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -40,15 +133,18 @@ class _OtpScreenState extends State<OtpScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Verify', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                Text('Verify', style: TextStyle(
+                    fontSize: 26, fontWeight: FontWeight.bold)),
                 SizedBox(height: 40),
-                Text('we have sent a 4 digit OTP to', style: TextStyle(fontSize: 15)),
+                Text('We have sent a 4 digit OTP to',
+                    style: TextStyle(fontSize: 15)),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+
                     Text(
-                      '+91 *** *** ' + '0000',
+                      '${widget.countryCode} *** *** $lastFourDigits',
                       style: TextStyle(
                         fontSize: 20,
                       ),
@@ -64,7 +160,10 @@ class _OtpScreenState extends State<OtpScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoginPage()));
+
+                      },
                       child: Text(
                         'Edit Number',
                         style: TextStyle(
@@ -80,12 +179,14 @@ class _OtpScreenState extends State<OtpScreen> {
                 OtpTextField(
                   numberOfFields: 4,
                   borderColor: Color(0xff800000),
-                  focusedBorderColor: Color(0xff800000), // Set the focused border color to red
+                  focusedBorderColor: Color(0xff800000),
+                  // Set the focused border color to red
                   showFieldAsBox: true,
                   onCodeChanged: (String code) {
                     // Handle validation or checks here
                   },
                   onSubmit: (String verificationCode) {
+                    _verifyOTP(verificationCode);
                     showDialog(
                       context: context,
                       builder: (context) {
@@ -100,12 +201,13 @@ class _OtpScreenState extends State<OtpScreen> {
 
                 SizedBox(height: 20),
                 Visibility(
-                  visible: !isTimerRunning, // Show when the timer is not running
+                  visible: !isTimerRunning,
+                  // Show when the timer is not running
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Didn't receive your otp",
+                        "Didn't receive the otp",
                         style: TextStyle(
                           fontSize: 15,
                         ),
@@ -122,8 +224,9 @@ class _OtpScreenState extends State<OtpScreen> {
                           ),
                         ),
                         onPressed: () {
-                          // Start the timer when "send again" is pressed
+                          // Start the timer and sends otp again when "send again" is pressed
                           startTimer();
+                          _sendOTP();
                         },
                         child: const Text(
                           'send again',
@@ -137,16 +240,16 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
                 Visibility(
                   visible: isTimerRunning, // Show when the timer is running
-                  child: Text('resend otp in : $countdownSeconds seconds'),
+                  child: Text('Resend otp in : $countdownSeconds seconds'),
                 ),
                 SizedBox(height: 50),
                 Container(
-                  width: 150,
-                  height: 50,
+                  width: 110,
+                  height: 40,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(25),
                     gradient: LinearGradient(
-                      colors: [Colors.black, Color(0xFF800000)],
+                      colors: [Color(0xffC03437), Color(0xFFD62327)],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -154,9 +257,12 @@ class _OtpScreenState extends State<OtpScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       // Add your button's action here
+                      Navigator.push(context, MaterialPageRoute(builder: (
+                          context) => StudentForm()));
                     },
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                      backgroundColor: MaterialStateProperty.all(
+                          Colors.transparent),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
@@ -164,7 +270,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                     ),
                     child: Text(
-                      'SUBMIT',
+                      'Submit',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -179,24 +285,4 @@ class _OtpScreenState extends State<OtpScreen> {
       ),
     );
   }
-
-  void startTimer() {
-    // Start the timer countdown
-    setState(() {
-      isTimerRunning = true;
-    });
-
-    timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-      setState(() {
-        countdownSeconds--;
-        if (countdownSeconds <= 0) {
-          // Timer finished, reset the variables
-          timer.cancel();
-          isTimerRunning = false;
-          countdownSeconds = 30;
-        }
-      });
-    });
-  }
 }
-
